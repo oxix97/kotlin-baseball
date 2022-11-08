@@ -1,17 +1,19 @@
 package baseball
 
 import camp.nextstep.edu.missionutils.Randoms
+import camp.nextstep.edu.missionutils.Console
 
 fun main() {
-    gameStartText()
+    printGameStartText()
     startBaseball()
 }
 
 fun startBaseball() {
     val computerNumbers = mutableListOf<Int>()
+    val userNumbers = mutableListOf<Int>()
     inputComputerNumbers(computerNumbers)
     while (true) {
-        val userNumbers = inputUserNumbers()
+        inputUserNumbers(userNumbers)
         val gameComplete = checkUserNumbers(userNumbers, computerNumbers)
         if (gameComplete) break
     }
@@ -32,6 +34,7 @@ fun checkUserNumbers(
     printUserCount(strikeCount, ballCount)
 
     if (strikeCount == 3) return true
+    userNumbers.clear()
     return false
 }
 
@@ -51,7 +54,12 @@ fun printUserCount(strikeCount: Int, ballCount: Int) {
 
 fun restartGameCheck() {
     println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.")
-    val number = readLine()?.toInt()
+    val number = try {
+        Console.readLine().toInt()
+    } catch (e: Exception) {
+        throw IllegalArgumentException()
+    }
+
     if (number == 1) {
         startBaseball()
     } else if (number != 2) {
@@ -59,19 +67,26 @@ fun restartGameCheck() {
     }
 }
 
-fun inputUserNumbers(): MutableList<Int> {
+fun inputUserNumbers(userNumbers: MutableList<Int>) {
     print("숫자를 입력해주세요 : ")
-    val input = readLine()!!
+    val input = Console.readLine()
     //예외 사항 : 정수 인지* , 길이가 3인지 , 중복된 숫자는 없는지
-    val userNumbers = input.map {
-        it.digitToInt()
+    input.map {
+        userNumbers.add(it.digitToInt())
     }.toMutableList()
 
-    if (userNumbers.size != userNumbers.toSet().size || userNumbers.size != 3) {
+    val exception = inputUserNumberExceptionCheck(userNumbers)
+
+    if (exception) {
         throw IllegalArgumentException()
     }
+}
 
-    return userNumbers
+fun inputUserNumberExceptionCheck(userNumbers: MutableList<Int>): Boolean {
+    if (userNumbers.size != userNumbers.toSet().size || userNumbers.size != 3 || userNumbers.contains(0)) {
+        return true
+    }
+    return false
 }
 
 fun inputComputerNumbers(numbers: MutableList<Int>) {
@@ -81,7 +96,7 @@ fun inputComputerNumbers(numbers: MutableList<Int>) {
             numbers.add(randomNumber)
         }
     }
-    println("computer : $numbers")
+//    println("computer : $numbers")
 }
 
-fun gameStartText() = println("숫자 야구 게임을 시작합니다.")
+fun printGameStartText() = println("숫자 야구 게임을 시작합니다.")
